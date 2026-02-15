@@ -12,11 +12,23 @@ export async function GET() {
   }
 }
 
+import Stock from '@/models/Stock';
+
 export async function POST(request: Request) {
   await dbConnect();
   try {
     const body = await request.json();
     const newLog = await Log.create(body);
+
+    // Deduct from Stock
+    const updates = [];
+    if (body.cement > 0) updates.push(Stock.findOneAndUpdate({ materialId: 'cement' }, { $inc: { quantity: -body.cement } }));
+    if (body.sand_fine > 0) updates.push(Stock.findOneAndUpdate({ materialId: 'sand_fine' }, { $inc: { quantity: -body.sand_fine } }));
+    if (body.sand_selection > 0) updates.push(Stock.findOneAndUpdate({ materialId: 'sand_selection' }, { $inc: { quantity: -body.sand_selection } }));
+    if (body.brick_chips > 0) updates.push(Stock.findOneAndUpdate({ materialId: 'brick_chips' }, { $inc: { quantity: -body.brick_chips } }));
+    
+    await Promise.all(updates);
+
     return NextResponse.json(newLog, { status: 201 });
   } catch (error: any) {
     console.error('Error creating log:', error);

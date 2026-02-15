@@ -20,6 +20,7 @@ import {
   Package
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useToast } from '@/context/ToastContext';
 
 const tiers = ['Base', '1st Floor', '2nd Floor', '3rd Floor', '4th Floor', '5th Floor', '6th Floor', '7th Floor', '8th Floor', '9th Floor', '10th Floor'];
 
@@ -45,7 +46,7 @@ export default function LogPage() {
     { id: 'crane_lift', name: 'Crane Trips', unit: 'Count', icon: <Construction size={16} /> },
   ];
   const [loading, setLoading] = useState(false);
-  const [success, setSuccess] = useState(false);
+  const { showToast } = useToast();
   const [showTierModal, setShowTierModal] = useState(false);
   const [loggedBy, setLoggedBy] = useState('');
   const [currentTime, setCurrentTime] = useState(new Date());
@@ -108,9 +109,8 @@ export default function LogPage() {
       });
 
       if (res.ok) {
-        setSuccess(true);
+        showToast('Trip Logged Successfully!');
         setCounts({ cement: 0, sand_fine: 0, sand_selection: 0, brick_chips: 0, crane_lift: 1 });
-        setTimeout(() => setSuccess(false), 3000);
       }
     } catch (error) {
       console.error('Submission failed:', error);
@@ -132,7 +132,7 @@ export default function LogPage() {
             <h1 className="text-xl lg:text-2xl font-black text-gray-900 leading-none tracking-tight">Trip Log</h1>
             <p className="text-[9px] lg:text-[10px] text-gray-400 font-bold flex items-center gap-1.5 mt-1 lg:mt-1.5 uppercase opacity-80 tracking-widest">
               <Clock size={11} className="text-orange-500" />
-              {mounted ? currentTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '--:--'} • {counts.crane_lift > 0 ? 'Active Entry' : 'Manual Adjustment'}
+              {mounted ? currentTime.toLocaleTimeString('en-BD', { hour: '2-digit', minute: '2-digit', hour12: true }) : '--:--'} • {counts.crane_lift > 0 ? 'Active Entry' : 'Manual Adjustment'}
             </p>
           </div>
         </div>
@@ -291,21 +291,6 @@ export default function LogPage() {
         )}
       </AnimatePresence>
 
-      <AnimatePresence>
-        {success && (
-          <motion.div 
-            initial={{ opacity: 0, y: -20, x: '-50%' }}
-            animate={{ opacity: 1, y: 0, x: '-50%' }}
-            exit={{ opacity: 0, y: -20, x: '-50%' }}
-            className="fixed top-8 left-1/2 z-[200] glass-effect bg-white/95 border border-orange-500/10 text-orange-600 px-6 py-3 rounded-full flex items-center gap-2.5 shadow-2xl font-black text-[10px] lg:text-xs uppercase tracking-wider"
-          >
-            <div className="w-5 h-5 rounded-full bg-orange-600 text-white flex items-center justify-center">
-              <CheckCircle2 size={12} strokeWidth={4} />
-            </div>
-            Trip Logged Successfully!
-          </motion.div>
-        )}
-      </AnimatePresence>
     </div>
   );
 }

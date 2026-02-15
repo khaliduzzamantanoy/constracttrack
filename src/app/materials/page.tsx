@@ -132,7 +132,7 @@ export default function MaterialsPage() {
                     </div>
                     <div>
                       <p className="text-[11px] font-black text-gray-900 leading-none">{new Date(log.timestamp).toLocaleDateString([], { day: '2-digit', month: 'short' })}</p>
-                      <p className="text-[8px] text-gray-400 font-bold mt-1 uppercase opacity-60">{new Date(log.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</p>
+                      <p className="text-[8px] text-gray-400 font-bold mt-1 uppercase opacity-60">{new Date(log.timestamp).toLocaleTimeString('en-BD', { hour: '2-digit', minute: '2-digit', hour12: true })}</p>
                     </div>
                   </div>
                   <div className="flex flex-col items-end gap-1">
@@ -195,7 +195,7 @@ export default function MaterialsPage() {
                          </div>
                          <div>
                             <p className="text-[11px] font-black text-gray-900 leading-none">{new Date(log.timestamp).toLocaleDateString([], { day: '2-digit', month: 'short', year: 'numeric' })}</p>
-                            <p className="text-[9px] text-gray-400 font-bold mt-1 uppercase tracking-widest opacity-60">{new Date(log.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</p>
+                            <p className="text-[9px] text-gray-400 font-bold mt-1 uppercase tracking-widest opacity-60">{new Date(log.timestamp).toLocaleTimeString('en-BD', { hour: '2-digit', minute: '2-digit', hour12: true })}</p>
                          </div>
                       </div>
                     </td>

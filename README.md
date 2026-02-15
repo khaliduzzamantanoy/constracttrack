@@ -7,6 +7,8 @@ An advanced, data-driven construction material and labor tracking system designe
 - **Real-time Trip Logging**: Track material movement (Cement, Sand, Chips) and Crane Lifts with precision.
 - **Manual & Zero-Data Entry**: Flexible input system allowing zero values and manual adjustments.
 - **Material Archive**: Comprehensive history log with filtering by floor and operator.
+- **Stock Management**: Real-time inventory tracking for Cement, Sand, and Chips with automatic deduction logic.
+- **Global Notifications**: Robust toast system using React Portals to ensure visibility across all devices.
 - **Automated Reporting**: One-click generation of professional PDF audit reports with automated formatting.
 - **Premium UI/UX**: Modern "Glassmorphism" design with fluid animations and ergonomic mobile navigation.
 - **Responsive Design**: Fully optimized for tablets and mobile devices with dedicated navigation modes.

@@ -57,7 +57,7 @@ export default function ReportDocument({
         <div style={{ textAlign: 'right' }}>
           <p style={{ fontSize: '12px', fontWeight: 'bold', margin: '0', textTransform: 'uppercase' }}>Generated Date</p>
           <p style={{ fontSize: '14px', fontWeight: 'bold', margin: '4px 0 0 0' }}>{timestamp.toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })}</p>
-          <p style={{ fontSize: '12px', margin: '2px 0 0 0' }}>{timestamp.toLocaleTimeString()}</p>
+          <p style={{ fontSize: '12px', margin: '2px 0 0 0' }}>{timestamp.toLocaleTimeString('en-BD')}</p>
         </div>
       </div>
 
@@ -74,8 +74,8 @@ export default function ReportDocument({
           </thead>
           <tbody>
             <tr style={{ pageBreakInside: 'avoid' }}><td style={{ border: '1px solid #000000', padding: '10px', fontSize: '10px' }}>Cement Bags</td><td style={{ border: '1px solid #000000', padding: '10px', fontSize: '10px' }}>{totalCement}</td><td style={{ border: '1px solid #000000', padding: '10px', fontSize: '10px' }}>Bags</td></tr>
-            <tr style={{ pageBreakInside: 'avoid' }}><td style={{ border: '1px solid #000000', padding: '10px', fontSize: '10px' }}>Fine Sand (F-Sand)</td><td style={{ border: '1px solid #000000', padding: '10px', fontSize: '10px' }}>{totalFineSand}</td><td style={{ border: '1px solid #000000', padding: '10px', fontSize: '10px' }}>CFT</td></tr>
-            <tr style={{ pageBreakInside: 'avoid' }}><td style={{ border: '1px solid #000000', padding: '10px', fontSize: '10px' }}>Select Sand (S-Sand)</td><td style={{ border: '1px solid #000000', padding: '10px', fontSize: '10px' }}>{totalSelectSand}</td><td style={{ border: '1px solid #000000', padding: '10px', fontSize: '10px' }}>CFT</td></tr>
+            <tr style={{ pageBreakInside: 'avoid' }}><td style={{ border: '1px solid #000000', padding: '10px', fontSize: '10px' }}>Fine Sand (FS)</td><td style={{ border: '1px solid #000000', padding: '10px', fontSize: '10px' }}>{totalFineSand}</td><td style={{ border: '1px solid #000000', padding: '10px', fontSize: '10px' }}>CFT</td></tr>
+            <tr style={{ pageBreakInside: 'avoid' }}><td style={{ border: '1px solid #000000', padding: '10px', fontSize: '10px' }}>Select Sand (SS)</td><td style={{ border: '1px solid #000000', padding: '10px', fontSize: '10px' }}>{totalSelectSand}</td><td style={{ border: '1px solid #000000', padding: '10px', fontSize: '10px' }}>CFT</td></tr>
             <tr style={{ pageBreakInside: 'avoid' }}><td style={{ border: '1px solid #000000', padding: '10px', fontSize: '10px' }}>Brick Chips</td><td style={{ border: '1px solid #000000', padding: '10px', fontSize: '10px' }}>{totalChips}</td><td style={{ border: '1px solid #000000', padding: '10px', fontSize: '10px' }}>CFT</td></tr>
             <tr style={{ pageBreakInside: 'avoid' }}><td style={{ border: '1px solid #000000', padding: '10px', fontSize: '10px' }}>Vertical Logistics (Trips)</td><td style={{ border: '1px solid #000000', padding: '10px', fontSize: '10px' }}>{totalTrips}</td><td style={{ border: '1px solid #000000', padding: '10px', fontSize: '10px' }}>Trips</td></tr>
           </tbody>
@@ -93,7 +93,7 @@ export default function ReportDocument({
             </tr>
             <tr style={{ pageBreakInside: 'avoid' }}>
               <th style={{ border: '1px solid #000000', padding: '10px', textAlign: 'left', fontSize: '10px', backgroundColor: '#f3f4f6' }}>Unique Authorized Operators</th>
-              <td style={{ border: '1px solid #000000', padding: '10px', fontSize: '10px' }}>{uniqueUsers} Staff Members</td>
+              <td style={{ border: '1px solid #000000', padding: '10px', fontSize: '10px' }}>{uniqueUsers} Managers</td>
             </tr>
             <tr style={{ pageBreakInside: 'avoid' }}>
               <th style={{ border: '1px solid #000000', padding: '10px', textAlign: 'left', fontSize: '10px', backgroundColor: '#f3f4f6' }}>Data Integrity Verification</th>
@@ -121,7 +121,7 @@ export default function ReportDocument({
                 <td style={{ border: '1px solid #000000', padding: '10px', fontSize: '10px' }}>
                   {new Date(log.timestamp).toLocaleDateString([], { day: '2-digit', month: 'short', year: 'numeric' })}
                   <br/>
-                  {new Date(log.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                  {new Date(log.timestamp).toLocaleTimeString('en-BD', { hour: '2-digit', minute: '2-digit', hour12: true })}
                 </td>
                 <td style={{ border: '1px solid #000000', padding: '10px', fontSize: '10px' }}>{log.loggedBy}</td>
                 <td style={{ border: '1px solid #000000', padding: '10px', fontSize: '10px' }}>{log.tier}</td>

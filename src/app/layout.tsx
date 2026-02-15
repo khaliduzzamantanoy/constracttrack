@@ -28,6 +28,8 @@ export const viewport: Viewport = {
   maximumScale: 1,
 };
 
+import { ToastProvider } from "@/context/ToastContext";
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -39,12 +41,14 @@ export default function RootLayout({
         suppressHydrationWarning
         className={`${geistSans.variable} ${geistMono.variable} antialiased selection:bg-orange-500/30 bg-[#fbfbfb]`}
       >
-        <Sidebar />
-        <main className="min-h-screen pb-12 lg:pl-64 overflow-x-hidden">
-          {children}
-          <Footer />
-        </main>
-        <Navbar />
+        <ToastProvider>
+          <Sidebar />
+          <main className="min-h-screen pb-12 lg:pl-64 overflow-x-hidden">
+            {children}
+            <Footer />
+          </main>
+          <Navbar />
+        </ToastProvider>
       </body>
     </html>
   );
