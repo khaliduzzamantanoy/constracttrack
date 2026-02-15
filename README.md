@@ -1,36 +1,71 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Constract Log - Construction Material Tracker
+
+An advanced, data-driven construction material and labor tracking system designed with a premium "liquid glass" aesthetic. This application provides real-time logging, material inventory tracking, and automated PDF reporting for construction sites.
+
+## Features
+
+- **Real-time Trip Logging**: Track material movement (Cement, Sand, Chips) and Crane Lifts with precision.
+- **Manual & Zero-Data Entry**: Flexible input system allowing zero values and manual adjustments.
+- **Material Archive**: Comprehensive history log with filtering by floor and operator.
+- **Automated Reporting**: One-click generation of professional PDF audit reports with automated formatting.
+- **Premium UI/UX**: Modern "Glassmorphism" design with fluid animations and ergonomic mobile navigation.
+- **Responsive Design**: Fully optimized for tablets and mobile devices with dedicated navigation modes.
+
+## Tech Stack
+
+- **Framework**: [Next.js 14](https://nextjs.org/) (App Router)
+- **Styling**: [Tailwind CSS](https://tailwindcss.com/)
+- **Icons**: [Lucide React](https://lucide.dev/)
+- **Animations**: [Framer Motion](https://www.framer.com/motion/)
+- **Database**: MongoDB (Mongoose)
+- **PDF Generation**: jsPDF & html2canvas
 
 ## Getting Started
 
-First, run the development server:
+### Prerequisites
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+- Node.js (v18 or higher)
+- npm or yarn
+- MongoDB connection string
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### Installation
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+1. **Clone the repository**
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+   ```bash
+   git clone https://github.com/khaliduzzamantanoy/constracttrack.git
+   cd constracttrack
+   ```
+2. **Install dependencies**
 
-## Learn More
+   ```bash
+   npm install
+   ```
+3. **Environment Setup**
+   Create a `.env.local` file in the root directory:
 
-To learn more about Next.js, take a look at the following resources:
+   ```env
+   MONGODB_URI=your_mongodb_connection_string
+   ```
+4. **Run Development Server**
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+   ```bash
+   npm run dev
+   ```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+   Open [http://localhost:3000](http://localhost:3000) with your browser.
 
-## Deploy on Vercel
+## Usage
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+- **Dashboard**: View real-time aggregated stats and recent activity.
+- **Trip Log**: Submit new material entries. Use the "+" and "-" buttons or type numbers directly.
+- **Materials**: Browse the full history of all logs. Filter by floor or search by operator name.
+- **Report**: Generate and download professional PDF audit reports.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+---
+
+**Developed by TANOY**

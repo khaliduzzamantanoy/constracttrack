@@ -1,0 +1,39 @@
+import { NextResponse } from 'next/server';
+import dbConnect from '@/lib/db';
+import Log from '@/models/Log';
+
+export async function GET() {
+  await dbConnect();
+  try {
+    const logs = await Log.find({}).sort({ timestamp: -1 });
+    return NextResponse.json(logs);
+  } catch (error) {
+    return NextResponse.json({ error: 'Failed to fetch logs' }, { status: 500 });
+  }
+}
+
+export async function POST(request: Request) {
+  await dbConnect();
+  try {
+    const body = await request.json();
+    const newLog = await Log.create(body);
+    return NextResponse.json(newLog, { status: 201 });
+  } catch (error: any) {
+    console.error('Error creating log:', error);
+    return NextResponse.json({ error: error.message || 'Failed to create log' }, { status: 400 });
+  }
+}
+
+export async function PATCH(request: Request) {
+  const { id, ...data } = await request.json();
+  await dbConnect();
+  try {
+    if (!id) throw new Error('Log ID is required');
+    const updatedLog = await Log.findByIdAndUpdate(id, data, { new: true });
+    return NextResponse.json(updatedLog);
+  } catch (error: any) {
+    return NextResponse.json({ error: error.message || 'Failed to update log' }, { status: 400 });
+  }
+}
+
+
