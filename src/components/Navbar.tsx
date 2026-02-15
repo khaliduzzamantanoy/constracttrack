@@ -18,7 +18,7 @@ const Navbar = () => {
   const pathname = usePathname();
 
   return (
-    <div className="fixed bottom-4 lg:bottom-8 left-1/2 -translate-x-1/2 z-50 w-full px-6 flex justify-center pointer-events-none lg:hidden">
+    <div className="fixed bottom-4 lg:bottom-8 left-1/2 -translate-x-1/2 z-50 w-full px-6 flex justify-center pointer-events-none lg:hidden print:hidden">
       <nav className="glass-capsule flex items-center p-1 lg:p-1.5 w-fit relative shadow-[0_15px_40px_rgba(0,0,0,0.1)] border-white/40 pointer-events-auto overflow-hidden">
         {navItems.map((item) => {
           const isActive = pathname === item.href;

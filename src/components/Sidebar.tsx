@@ -1,7 +1,7 @@
 "use client";
 
 import React from 'react';
-import { Home, ClipboardList, PenTool, BarChart3, Facebook, MessageCircle, Construction } from 'lucide-react';
+import { Home, ClipboardList, PenTool, BarChart3, Settings, Facebook, MessageCircle, Construction } from 'lucide-react';
 import { usePathname } from 'next/navigation';
 import Link from 'next/link';
 import { cn } from '@/lib/utils';
@@ -12,13 +12,14 @@ const navItems = [
   { icon: PenTool, label: 'Execution Log', href: '/log' },
   { icon: ClipboardList, label: 'Material Ledger', href: '/materials' },
   { icon: BarChart3, label: 'Audit Reports', href: '/report' },
+  { icon: Settings, label: 'Settings', href: '/settings' },
 ];
 
 export default function Sidebar() {
   const pathname = usePathname();
 
   return (
-    <aside className="fixed left-0 top-0 bottom-0 w-64 bg-white/50 backdrop-blur-xl border-r border-black/[0.03] hidden lg:flex flex-col z-50">
+    <aside className="fixed left-0 top-0 bottom-0 w-64 bg-white/50 backdrop-blur-xl border-r border-black/[0.03] hidden lg:flex flex-col z-50 print:hidden">
       <div className="p-8">
         <div className="flex items-center gap-3 mb-10">
           <div className="w-10 h-10 bg-orange-600 rounded-xl flex items-center justify-center text-white shadow-lg shadow-orange-600/20">

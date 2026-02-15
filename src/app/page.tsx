@@ -4,6 +4,7 @@ import React, { useEffect, useState } from 'react';
 import { Package, User, TrendingUp, Calendar, Layers, Construction, LayoutGrid, Clock, ChevronRight, Plus, X } from 'lucide-react';
 import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useToast } from '@/context/ToastContext';
 
 export default function Dashboard() {
   const [logs, setLogs] = useState<any[]>([]);
@@ -237,6 +238,7 @@ function AddStockModal({ onClose, onSuccess }: { onClose: () => void, onSuccess:
   const [material, setMaterial] = useState('cement');
   const [quantity, setQuantity] = useState('');
   const [loading, setLoading] = useState(false);
+  const { showToast } = useToast();
 
   const handleSubmit = async () => {
     if (!quantity) return;
@@ -247,9 +249,11 @@ function AddStockModal({ onClose, onSuccess }: { onClose: () => void, onSuccess:
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ materialId: material, quantity: parseInt(quantity) })
       });
+      showToast('Stock Updated Successfully!');
       onSuccess();
     } catch (e) {
       console.error(e);
+      showToast('Failed to update stock', 'error');
       setLoading(false);
     }
   };

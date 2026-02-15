@@ -32,14 +32,14 @@ export function ToastProvider({ children }: { children: ReactNode }) {
       {children}
       {mounted && typeof document !== 'undefined' && 
         createPortal(
-          <div className="fixed inset-0 pointer-events-none z-[99999] flex items-start justify-center lg:justify-end pt-8 lg:p-10 font-sans">
+          <div className="fixed top-0 left-0 right-0 lg:left-auto lg:right-0 pointer-events-none z-[99999] flex justify-center lg:justify-end p-6 lg:p-10 font-sans">
             <AnimatePresence>
               {toast && (
                 <motion.div
-                  initial={{ opacity: 0, y: -20, scale: 0.9 }}
+                  initial={{ opacity: 0, y: -40, scale: 0.8 }}
                   animate={{ opacity: 1, y: 0, scale: 1 }}
-                  exit={{ opacity: 0, y: -20, scale: 0.9 }}
-                   className="pointer-events-auto glass-effect bg-white/95 border border-orange-500/10 text-orange-600 px-6 py-3 rounded-full flex items-center gap-2.5 shadow-2xl font-black text-[10px] lg:text-xs uppercase tracking-wider relative lg:!static lg:!mr-0 lg:!mt-0"
+                  exit={{ opacity: 0, y: -40, scale: 0.8 }}
+                  className="pointer-events-auto glass-effect bg-white/95 border border-orange-500/10 text-orange-600 px-6 py-3 rounded-full flex items-center gap-2.5 shadow-2xl font-black text-[10px] lg:text-xs uppercase tracking-wider"
                 >
                   <div className={`w-5 h-5 rounded-full text-white flex items-center justify-center ${
                       toast.type === 'error' ? 'bg-red-500' : 'bg-orange-600'

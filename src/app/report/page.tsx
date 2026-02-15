@@ -20,23 +20,32 @@ import { jsPDF } from 'jspdf';
 import html2canvas from 'html2canvas';
 import Link from 'next/link';
 import ReportDocument from '@/components/ReportDocument';
+import { useToast } from '@/context/ToastContext';
 
 export default function ReportPage() {
   const [logs, setLogs] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [generating, setGenerating] = useState(false);
-  const [downloadSuccess, setDownloadSuccess] = useState(false);
+  const [projectName, setProjectName] = useState('');
+  const { showToast } = useToast();
   const [mounted, setMounted] = useState(false);
   const reportRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     setMounted(true);
+    
+    // Fetch logs
     fetch('/api/logs')
       .then(res => res.json())
       .then(data => {
         setLogs(data);
         setLoading(false);
       });
+
+    // Fetch branding
+    fetch('/api/admin/config')
+      .then(res => res.json())
+      .then(data => setProjectName(data.projectName));
   }, []);
 
   const totalCement = logs.reduce((acc, curr) => acc + (curr.cement || 0), 0);
@@ -51,36 +60,67 @@ export default function ReportPage() {
     setGenerating(true);
     
     try {
-      const element = reportRef.current;
-      element.style.display = 'block';
-      element.style.visibility = 'visible';
+      const container = reportRef.current;
+      container.style.display = 'block';
+      container.style.visibility = 'visible';
       
-      await new Promise(resolve => setTimeout(resolve, 300));
-      
-      const canvas = await html2canvas(element, {
-        scale: 2,
-        useCORS: true,
-        logging: false,
-        backgroundColor: '#ffffff',
-        width: 720,
-        height: element.offsetHeight,
-      });
-      
-      element.style.display = 'none';
+      // Wait for render
+      await new Promise(resolve => setTimeout(resolve, 500));
 
-      const imgData = canvas.toDataURL('image/png', 1.0);
       const pdf = new jsPDF('p', 'mm', 'a4');
       const pageWidth = pdf.internal.pageSize.getWidth();
+      const pageHeight = pdf.internal.pageSize.getHeight();
+
+      const processPage = async (pageElement: HTMLElement, index: number) => {
+        const canvas = await html2canvas(pageElement, {
+          scale: 2,
+          useCORS: true,
+          logging: false,
+          backgroundColor: '#ffffff',
+          width: 720,
+          windowWidth: 720
+        });
+
+        const imgData = canvas.toDataURL('image/png', 1.0);
+        const imgWidth = pageWidth;
+        const imgHeight = (canvas.height * imgWidth) / canvas.width;
+        
+        // Add new page for every section except the very first one
+        if (index > 0) {
+          pdf.addPage();
+        }
+        
+        pdf.addImage(imgData, 'PNG', 0, 0, imgWidth, imgHeight);
+      };
       
-      const margin = 15;
-      const contentWidth = pageWidth - (margin * 2);
-      const contentHeight = (canvas.height * contentWidth) / canvas.width;
+      // Get all report pages by class name
+      const pages = Array.from(container.querySelectorAll('.report-page-section')) as HTMLElement[];
+
+      if (pages.length === 0) {
+         console.warn("No report pages found, falling back to container children");
+         // Fallback logic remains same just in case
+         const children = Array.from(container.children) as HTMLElement[];
+         if (children.length === 1 && children[0].children.length > 0) {
+             const innerPages = Array.from(children[0].children) as HTMLElement[];
+             for (let i = 0; i < innerPages.length; i++) {
+                await processPage(innerPages[i], i);
+             }
+         } else {
+             for (let i = 0; i < children.length; i++) {
+                await processPage(children[i], i);
+             }
+         }
+      } else {
+         for (let i = 0; i < pages.length; i++) {
+            await processPage(pages[i], i);
+         }
+      }
       
-      pdf.addImage(imgData, 'PNG', margin, margin, contentWidth, contentHeight);
+      container.style.display = 'none';
+
       pdf.save(`CTR_REPORT_${new Date().getTime()}.pdf`);
       
-      setDownloadSuccess(true);
-      setTimeout(() => setDownloadSuccess(false), 3000);
+      showToast('Report Downloaded Successfully!');
     } catch (error: any) {
       console.error('PDF Generation failed:', error);
       alert(`Download Error: ${error.message || 'The system was unable to generate the file.'}`);
@@ -171,57 +211,127 @@ export default function ReportPage() {
               <div className="p-6 lg:p-8 border-b border-black/[0.02] flex justify-between items-center">
                  <div>
                     <h3 className="text-base lg:text-lg font-black text-gray-900 uppercase tracking-tight">Trip Audit History</h3>
-                    <p className="text-[9px] lg:text-[10px] text-gray-400 font-bold uppercase tracking-widest mt-1">Latest execution entries</p>
+                    <p className="text-[9px] lg:text-[10px] text-gray-400 font-bold uppercase tracking-widest mt-1">Live execution ledger</p>
                  </div>
                  <Link href="/materials" className="hidden lg:flex items-center gap-1.5 text-[9px] font-black text-orange-600 uppercase tracking-widest group">
                     Full Archive <ArrowRight size={12} className="group-hover:translate-x-1 transition-transform" />
                  </Link>
               </div>
-              <div className="overflow-x-auto">
-                 <table className="w-full text-left">
+              {/* Desktop View: Professional Table */}
+              <div className="hidden lg:block overflow-x-auto">
+                 <table className="w-full text-left min-w-[600px]">
                     <thead className="bg-gray-50/30">
                        <tr className="border-b border-black/[0.02]">
-                          <th className="px-6 lg:px-8 py-3.5 lg:py-4 text-[9px] font-black text-gray-400 uppercase tracking-widest">Date</th>
-                          <th className="px-6 lg:px-8 py-3.5 lg:py-4 text-[9px] font-black text-gray-400 uppercase tracking-widest text-center">Audit</th>
-                          <th className="px-6 lg:px-8 py-3.5 lg:py-4 text-[9px] font-black text-gray-400 uppercase tracking-widest text-right">Floor</th>
+                          <th className="px-8 py-4 text-[9px] font-black text-gray-400 uppercase tracking-widest">Entry Date</th>
+                          <th className="px-8 py-4 text-[9px] font-black text-gray-400 uppercase tracking-widest">Material Payload</th>
+                          <th className="px-8 py-4 text-[9px] font-black text-gray-400 uppercase tracking-widest">Handled By</th>
+                          <th className="px-8 py-4 text-[9px] font-black text-gray-400 uppercase tracking-widest text-right">Floor</th>
                        </tr>
                     </thead>
                     <tbody className="divide-y divide-black/[0.01]">
-                       {logs.slice(0, 8).map((log, i) => (
+                       {logs.slice(0, 8).map((log) => (
                           <tr key={log._id} className="hover:bg-white/60 transition-all group">
-                             <td className="px-6 lg:px-8 py-4 lg:py-4.5">
-                                <div className="flex items-center gap-2.5">
-                                   <div className="w-7 h-7 rounded-lg bg-gray-50 text-gray-300 flex items-center justify-center opacity-70">
-                                      <Calendar size={12} />
+                             <td className="px-8 py-5">
+                                <div className="flex items-center gap-3">
+                                   <div className="w-8 h-8 rounded-xl bg-orange-50 text-orange-600 flex items-center justify-center shrink-0 border border-orange-100/20">
+                                      <Calendar size={14} strokeWidth={2.5} />
                                    </div>
                                    <div>
                                       <p className="text-[11px] font-black text-gray-900 leading-none">{new Date(log.timestamp).toLocaleDateString([], { day: '2-digit', month: 'short' })}</p>
-                                      <p className="text-[8px] text-gray-400 font-bold mt-1 opacity-50 uppercase">{new Date(log.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</p>
+                                      <p className="text-[9px] text-gray-400 font-bold mt-1.5 opacity-60 uppercase">{new Date(log.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</p>
                                    </div>
                                 </div>
                              </td>
-                             <td className="px-6 lg:px-8 py-4 lg:py-4.5">
-                                <div className="flex justify-center gap-1 opacity-70">
-                                   {[log.cement, log.sand_fine, log.sand_selection, log.brick_chips].map((val, idx) => (
-                                      <div key={idx} className={`w-1 h-1 rounded-full ${val > 0 ? 'bg-orange-500' : 'bg-gray-100'}`} />
+                             <td className="px-8 py-5">
+                                <div className="flex items-center gap-3">
+                                   {[
+                                     { val: log.cement, color: 'text-blue-600', bg: 'bg-blue-50', label: 'CMT' },
+                                     { val: log.sand_fine, color: 'text-amber-600', bg: 'bg-amber-50', label: 'FS' },
+                                     { val: log.sand_selection, color: 'text-orange-600', bg: 'bg-orange-50', label: 'SS' },
+                                     { val: log.brick_chips, color: 'text-red-600', bg: 'bg-red-50', label: 'BC' }
+                                   ].filter(m => m.val > 0).map((m, idx) => (
+                                      <div key={idx} className={`${m.bg} ${m.color} px-2 py-1 rounded-lg border border-black/[0.03] space-x-1.5 flex items-center`}>
+                                         <span className="text-[8px] font-black uppercase opacity-60 tracking-tighter">{m.label}</span>
+                                         <span className="text-[10px] font-black">{m.val}</span>
+                                      </div>
                                    ))}
+                                   {([log.cement, log.sand_fine, log.sand_selection, log.brick_chips].every(v => v === 0)) && (
+                                      <span className="text-[9px] font-black text-gray-300 italic">No Payload</span>
+                                   )}
                                 </div>
                              </td>
-                             <td className="px-6 lg:px-8 py-4 lg:py-4.5 text-right">
-                                <span className="bg-orange-50 text-orange-600 px-2 py-0.5 rounded-lg text-[9px] font-black uppercase tracking-tight border border-orange-100/20">
+                             <td className="px-8 py-5">
+                                <div className="flex items-center gap-2">
+                                   <div className="w-6 h-6 rounded-full bg-gray-900 flex items-center justify-center text-[8px] font-black text-white shrink-0">
+                                      {log.loggedBy?.charAt(0).toUpperCase() || 'U'}
+                                   </div>
+                                   <span className="text-[10px] font-black text-gray-600 uppercase tracking-tight">{log.loggedBy || 'Unknown'}</span>
+                                </div>
+                             </td>
+                             <td className="px-8 py-5 text-right">
+                                <div className="inline-flex items-center gap-1.5 bg-orange-50 text-orange-600 px-2.5 py-1 rounded-full text-[9px] font-black uppercase tracking-tight border border-orange-100/50">
+                                   <Layers size={10} strokeWidth={3} />
                                    {log.tier}
-                                </span>
+                                </div>
                              </td>
                           </tr>
                        ))}
                     </tbody>
                  </table>
               </div>
+
+              {/* Mobile View: Vertical Card List */}
+              <div className="lg:hidden divide-y divide-black/[0.03]">
+                 {logs.slice(0, 8).map((log) => (
+                    <div key={log._id} className="p-5 space-y-4">
+                       <div className="flex justify-between items-start">
+                          <div className="flex items-center gap-3">
+                             <div className="w-9 h-9 rounded-xl bg-orange-50 text-orange-600 flex items-center justify-center shrink-0">
+                                <Calendar size={16} strokeWidth={2.5} />
+                             </div>
+                             <div>
+                                <p className="text-xs font-black text-gray-900 leading-none">
+                                   {new Date(log.timestamp).toLocaleDateString([], { day: '2-digit', month: 'short', year: 'numeric' })}
+                                </p>
+                                <p className="text-[9px] text-gray-400 font-bold mt-1 opacity-60 uppercase">{new Date(log.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</p>
+                             </div>
+                          </div>
+                          <div className="inline-flex items-center gap-1 bg-orange-50 text-orange-600 px-2 py-0.5 rounded-lg text-[8px] font-black uppercase tracking-tight border border-orange-100/50">
+                             {log.tier}
+                          </div>
+                       </div>
+
+                       <div className="flex flex-wrap gap-2">
+                          {[
+                            { val: log.cement, icon: <div className="w-1.5 h-1.5 rounded-full bg-blue-500" />, name: 'Cement' },
+                            { val: log.sand_fine, icon: <div className="w-1.5 h-1.5 rounded-full bg-amber-400" />, name: 'Fine' },
+                            { val: log.sand_selection, icon: <div className="w-1.5 h-1.5 rounded-full bg-amber-600" />, name: 'Select' },
+                            { val: log.brick_chips, icon: <div className="w-1.5 h-1.5 rounded-full bg-red-500" />, name: 'Chips' }
+                          ].filter(m => m.val > 0).map((m, idx) => (
+                             <div key={idx} className="flex items-center gap-1.5 bg-white/50 px-2.5 py-1.5 rounded-xl border border-black/[0.03] shadow-sm">
+                                {m.icon}
+                                <span className="text-[9px] font-black text-gray-500 uppercase">{m.name}:</span>
+                                <span className="text-[10px] font-black text-gray-900">{m.val}</span>
+                             </div>
+                          ))}
+                       </div>
+
+                       <div className="flex items-center justify-between pt-2 border-t border-black/[0.02]">
+                          <div className="flex items-center gap-2">
+                             <div className="w-5 h-5 rounded-full bg-gray-900 flex items-center justify-center text-[7px] font-black text-white">
+                                {log.loggedBy?.charAt(0).toUpperCase() || 'U'}
+                             </div>
+                             <span className="text-[9px] font-black text-gray-400 uppercase tracking-widest">{log.loggedBy || 'Unknown'}</span>
+                          </div>
+                          <div className="text-[8px] font-bold text-gray-300 uppercase tracking-widest">Entry Verified</div>
+                       </div>
+                    </div>
+                 ))}
+              </div>
               <div className="p-4 bg-gray-50/20 lg:hidden text-center border-t border-black/[0.02]">
-                 <Link href="/materials" className="text-[9px] font-black text-orange-600 uppercase tracking-widest">Full Audit Archive</Link>
+                 <Link href="/materials" className="text-[9px] font-black text-orange-600 uppercase tracking-widest">View Full Archive</Link>
               </div>
            </div>
-
         </div>
       </div>
 
@@ -237,16 +347,13 @@ export default function ReportPage() {
             totalTrips={totalTrips}
             uniqueUsers={uniqueUsers}
             isPdf={true}
+            showOfficeCopy={false}
+            showCopyLabel={false}
+            projectName={projectName}
           />
         </div>
       </div>
 
-      {downloadSuccess && (
-        <div className="fixed top-6 left-1/2 -translate-x-1/2 z-[110] glass-effect bg-white/95 border border-orange-500/10 text-orange-600 px-6 py-3 rounded-full flex items-center gap-2.5 shadow-xl font-black text-[10px] lg:text-xs uppercase text-center animate-in slide-in-from-top-10">
-          <CheckCircle2 size={18} className="text-orange-500" />
-          Report Downloaded!
-        </div>
-      )}
     </div>
   );
 }

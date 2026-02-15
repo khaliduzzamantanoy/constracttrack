@@ -6,6 +6,7 @@ import ReportDocument from '@/components/ReportDocument';
 export default function PDFViewPage() {
   const [logs, setLogs] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [projectName, setProjectName] = useState('');
 
   useEffect(() => {
     fetch('/api/logs')
@@ -14,6 +15,10 @@ export default function PDFViewPage() {
         setLogs(data);
         setLoading(false);
       });
+      
+    fetch('/api/admin/config')
+      .then(res => res.json())
+      .then(data => setProjectName(data.projectName));
   }, []);
 
   if (loading) return <div className="flex items-center justify-center min-h-screen">Loading Document...</div>;
@@ -27,7 +32,7 @@ export default function PDFViewPage() {
 
   return (
     <div className="min-h-screen bg-gray-100 py-12">
-      <div className="bg-white shadow-2xl mx-auto" style={{ width: '720px' }}>
+      <div id="report-container" className="bg-white shadow-2xl mx-auto" style={{ width: '720px' }}>
         <ReportDocument 
           logs={logs}
           totalCement={totalCement}
@@ -36,6 +41,7 @@ export default function PDFViewPage() {
           totalChips={totalChips}
           totalTrips={totalTrips}
           uniqueUsers={uniqueUsers}
+          projectName={projectName}
         />
       </div>
       
@@ -51,10 +57,60 @@ export default function PDFViewPage() {
 
       <style jsx global>{`
         @media print {
-          .no-print { display: none !important; }
-          body { background: white !important; padding: 0 !important; }
-          .min-h-screen { min-height: 0 !important; background: white !important; padding: 0 !important; }
-          .shadow-2xl { shadow: none !important; margin: 0 !important; }
+          /* Hide everything by default */
+          body * {
+            visibility: hidden;
+          }
+          
+          /* Only show the report container and its children */
+          #report-container, #report-container * {
+            visibility: visible;
+          }
+
+          /* Position the report at the top left */
+          #report-container {
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 100%;
+            margin: 0 !important;
+            padding: 0 !important;
+            box-shadow: none !important;
+          }
+
+          /* Hide specific UI elements explicitly */
+          nav, footer, .no-print, header { 
+            display: none !important; 
+          }
+          
+          /* Ensure backgrounds print correctly */
+          * {
+            -webkit-print-color-adjust: exact !important;
+            print-color-adjust: exact !important;
+          }
+
+          /* Page break handling */
+          .report-page-section {
+            break-after: page;
+            page-break-after: always;
+            margin-bottom: 0 !important;
+            box-shadow: none !important;
+          }
+          
+          /* Reset body and html for print */
+          body, html {
+            background: white !important;
+            height: auto !important;
+            overflow: visible !important;
+          }
+        }
+
+        /* Screen Preview Styling */
+        @media screen {
+          .report-page-section {
+            margin-bottom: 40px;
+            box-shadow: 0 10px 30px -10px rgba(0,0,0,0.1);
+          }
         }
       `}</style>
     </div>
