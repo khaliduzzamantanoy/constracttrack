@@ -3,7 +3,12 @@ import mongoose from 'mongoose';
 const MONGODB_URI = process.env.MONGODB_URI;
 
 if (!MONGODB_URI) {
-  throw new Error('Please define the MONGODB_URI environment variable inside .env.local');
+  if (process.env.NODE_ENV === 'production') {
+    // In production, we don't crash immediately to allow build to pass if DB isn't used
+    console.warn('MONGODB_URI not defined in environment');
+  } else {
+    throw new Error('Please define the MONGODB_URI environment variable inside .env.local');
+  }
 }
 
 /**
