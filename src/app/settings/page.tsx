@@ -158,7 +158,7 @@ export default function SettingsPage() {
           <div className="glass-effect p-6 lg:p-8 rounded-[1.5rem] lg:rounded-[2rem] bg-white/40 border-black/5 space-y-6">
              <div className="space-y-2">
                 <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Report Project Title</label>
-                <div className="flex flex-col md:flex-row gap-3">
+                <div className="flex flex-col md:flex-row md:items-center gap-3">
                    <input 
                       type="text" 
                       value={projectName}
@@ -169,7 +169,7 @@ export default function SettingsPage() {
                    <button 
                       onClick={handleUpdateBranding}
                       disabled={savingConfig}
-                      className="h-16 px-10 rounded-2xl bg-orange-600 text-white text-[12px] font-black uppercase tracking-widest shadow-lg shadow-orange-600/10 hover:bg-orange-700 active:scale-95 transition-all disabled:opacity-50"
+                      className="h-12 px-8 rounded-2xl bg-orange-600 text-white text-[10px] font-black uppercase tracking-widest shadow-lg shadow-orange-600/10 hover:bg-orange-700 active:scale-95 transition-all disabled:opacity-50 shrink-0"
                    >
                       {savingConfig ? 'Saving...' : 'Update Title'}
                    </button>
