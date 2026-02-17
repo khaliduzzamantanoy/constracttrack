@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { KeyRound, ShieldCheck, Construction, AlertCircle, ChevronRight, Check } from 'lucide-react';
+import { KeyRound, ShieldCheck, Construction, AlertCircle, ChevronRight, Check, CheckCircle2 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 
 export default function SetupPage() {
@@ -11,6 +11,7 @@ export default function SetupPage() {
   const [step, setStep] = useState(1); // 1: Initial, 2: Confirm
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [success, setSuccess] = useState(false);
   const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
   const router = useRouter();
 
@@ -58,6 +59,7 @@ export default function SetupPage() {
   };
 
   const handleSubmit = async () => {
+    if (loading) return;
     const p1 = pin.join('');
     const p2 = confirmPin.join('');
 
@@ -77,7 +79,10 @@ export default function SetupPage() {
       });
 
       if (res.ok) {
-        router.replace('/');
+        setSuccess(true);
+        setTimeout(() => {
+          window.location.href = '/';
+        }, 1200);
       } else {
         const data = await res.json();
         setError(data.error || 'Setup failed');
@@ -144,8 +149,20 @@ export default function SetupPage() {
           </div>
 
           <AnimatePresence mode="wait">
-            {error && (
+            {success ? (
               <motion.div 
+                initial={{ opacity: 0, scale: 0.5 }}
+                animate={{ opacity: 1, scale: 1 }}
+                className="flex flex-col items-center justify-center space-y-2 py-4"
+              >
+                <div className="w-12 h-12 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center">
+                   <CheckCircle2 size={32} strokeWidth={3} />
+                </div>
+                <span className="text-xs font-black text-emerald-600 uppercase tracking-widest">Setup Complete!</span>
+              </motion.div>
+            ) : error ? (
+              <motion.div 
+                key="error"
                 initial={{ opacity: 0, y: 5 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: 5 }}
@@ -154,10 +171,10 @@ export default function SetupPage() {
                 <AlertCircle size={14} />
                 {error}
               </motion.div>
-            )}
+            ) : null}
           </AnimatePresence>
 
-          {step === 1 ? (
+          {!success && (step === 1 ? (
             <button
               onClick={nextStep}
               disabled={pin.join('').length !== 6}
@@ -179,7 +196,7 @@ export default function SetupPage() {
                  </>
                )}
             </button>
-          )}
+          ))}
 
           {step === 2 && !loading && (
             <button 

@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Lock, Smartphone, Construction, AlertCircle, ChevronRight } from 'lucide-react';
+import { Lock, Smartphone, Construction, AlertCircle, ChevronRight, CheckCircle2 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 
 export default function LoginPage() {
@@ -10,6 +10,7 @@ export default function LoginPage() {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [isSetupNeeded, setIsSetupNeeded] = useState(false);
+  const [success, setSuccess] = useState(false);
   const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
   const router = useRouter();
 
@@ -46,6 +47,7 @@ export default function LoginPage() {
   };
 
   const handleSubmit = async () => {
+    if (loading) return;
     const fullPin = pin.join('');
     if (fullPin.length !== 6) {
       setError('Please enter all 6 digits');
@@ -61,7 +63,10 @@ export default function LoginPage() {
       });
 
       if (res.ok) {
-        router.replace('/');
+        setSuccess(true);
+        setTimeout(() => {
+          window.location.href = '/';
+        }, 1000);
       } else {
         const data = await res.json();
         setError(data.error || 'Invalid PIN');
@@ -127,8 +132,20 @@ export default function LoginPage() {
           </div>
 
           <AnimatePresence mode="wait">
-            {error && (
+            {success ? (
               <motion.div 
+                initial={{ opacity: 0, scale: 0.5 }}
+                animate={{ opacity: 1, scale: 1 }}
+                className="flex flex-col items-center justify-center space-y-2 py-4"
+              >
+                <div className="w-12 h-12 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center">
+                   <CheckCircle2 size={32} strokeWidth={3} />
+                </div>
+                <span className="text-xs font-black text-emerald-600 uppercase tracking-widest">Success! Unlocking...</span>
+              </motion.div>
+            ) : error ? (
+              <motion.div 
+                key="error"
                 initial={{ opacity: 0, scale: 0.95 }}
                 animate={{ opacity: 1, scale: 1 }}
                 exit={{ opacity: 0, scale: 0.95 }}
@@ -137,22 +154,24 @@ export default function LoginPage() {
                 <AlertCircle size={14} />
                 {error}
               </motion.div>
-            )}
+            ) : null}
           </AnimatePresence>
 
-          <button
-            onClick={handleSubmit}
-            disabled={loading || pin.join('').length !== 6}
-            className="w-full h-14 bg-orange-600 text-white rounded-2xl font-black uppercase tracking-widest text-[11px] shadow-lg shadow-orange-600/20 hover:bg-orange-700 active:scale-[0.98] transition-all disabled:opacity-50 disabled:grayscale flex items-center justify-center gap-2.5"
-          >
-            {loading ? (
-              <div className="w-5 h-5 border-3 border-white/30 border-t-white rounded-full animate-spin" />
-            ) : (
-              <>
-                Unlock System <ChevronRight size={18} />
-              </>
-            )}
-          </button>
+          {!success && (
+            <button
+              onClick={handleSubmit}
+              disabled={loading || pin.join('').length !== 6}
+              className="w-full h-14 bg-orange-600 text-white rounded-2xl font-black uppercase tracking-widest text-[11px] shadow-lg shadow-orange-600/20 hover:bg-orange-700 active:scale-[0.98] transition-all disabled:opacity-50 disabled:grayscale flex items-center justify-center gap-2.5"
+            >
+              {loading ? (
+                <div className="w-5 h-5 border-3 border-white/30 border-t-white rounded-full animate-spin" />
+              ) : (
+                <>
+                  Unlock System <ChevronRight size={18} />
+                </>
+              )}
+            </button>
+          )}
         </div>
 
         {/* Footer Info */}

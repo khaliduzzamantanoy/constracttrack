@@ -2,7 +2,7 @@
 
 import React, { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { KeyRound, ShieldCheck, Construction, AlertCircle, ChevronRight, Check, ArrowLeft } from 'lucide-react';
+import { KeyRound, ShieldCheck, Construction, AlertCircle, ChevronRight, Check, ArrowLeft, CheckCircle2 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useToast } from '@/context/ToastContext';
 
@@ -12,6 +12,7 @@ export default function ChangePinPage() {
   const [step, setStep] = useState(1); // 1: New PIN, 2: Confirm
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [success, setSuccess] = useState(false);
   const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
   const router = useRouter();
   const { showToast } = useToast();
@@ -71,8 +72,11 @@ export default function ChangePinPage() {
       });
 
       if (res.ok) {
+        setSuccess(true);
         showToast('PIN updated successfully', 'success');
-        router.replace('/settings');
+        setTimeout(() => {
+          router.replace('/settings');
+        }, 1000);
       } else {
         const data = await res.json();
         setError(data.error || 'Update failed');
@@ -147,8 +151,20 @@ export default function ChangePinPage() {
           </div>
 
           <AnimatePresence mode="wait">
-            {error && (
+            {success ? (
               <motion.div 
+                initial={{ opacity: 0, scale: 0.5 }}
+                animate={{ opacity: 1, scale: 1 }}
+                className="flex flex-col items-center justify-center space-y-2 py-4"
+              >
+                <div className="w-12 h-12 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center">
+                   <CheckCircle2 size={32} strokeWidth={3} />
+                </div>
+                <span className="text-xs font-black text-emerald-600 uppercase tracking-widest">PIN Updated!</span>
+              </motion.div>
+            ) : error ? (
+              <motion.div 
+                key="error"
                 initial={{ opacity: 0, y: 5 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: 5 }}
@@ -157,10 +173,10 @@ export default function ChangePinPage() {
                 <AlertCircle size={14} />
                 {error}
               </motion.div>
-            )}
+            ) : null}
           </AnimatePresence>
 
-          {step === 1 ? (
+          {!success && (step === 1 ? (
             <button
               onClick={nextStep}
               disabled={pin.join('').length !== 6}
@@ -182,7 +198,7 @@ export default function ChangePinPage() {
                  </>
                )}
             </button>
-          )}
+          ))}
 
           {step === 2 && !loading && (
             <button 
