@@ -11,15 +11,15 @@ export async function middleware(req: NextRequest) {
   // 1. Get session from cookies
   const session = req.cookies.get("session")?.value;
 
-  // 2. Decrypt session to verify
+  // 2. Decrypt and verify session
   let decoded = null;
   if (session) {
     try {
       decoded = await decrypt(session);
       
-      // 2.1 CRITICAL: Verify against DB if it's NOT a public route
-      // We use a fetch to our internal verify API because middleware is Edge Runtime
-      if (!isPublicRoute) {
+      // 2.1 Always verify against DB for non-API routes 
+      // This prevents redirection loops for revoked sessions
+      if (!path.startsWith("/api/")) {
         const verifyRes = await fetch(`${req.nextUrl.origin}/api/auth/verify`, {
           headers: { Cookie: `session=${session}` },
           cache: 'no-store'
@@ -30,12 +30,11 @@ export async function middleware(req: NextRequest) {
         }
       }
     } catch (e) {
-      console.error("Failed to decrypt or verify session", e);
+      console.error("Session verification failed", e);
     }
   }
 
-  // 3. If it's a public route, just allow it
-  // (unless it's /login or /setup and we are already authed)
+  // 3. If it's a public route and we have a valid session, redirect away from auth pages
   if (isPublicRoute) {
     if (decoded && (path === "/login" || path === "/setup")) {
       return NextResponse.redirect(new URL("/", req.nextUrl));
@@ -43,10 +42,8 @@ export async function middleware(req: NextRequest) {
     return NextResponse.next();
   }
 
-  // 4. Redirect to login if not authenticated
+  // 4. Redirect to login if not authenticated for protected routes
   if (!decoded) {
-    // We should also check if setup is needed, but we can't easily call internal API here
-    // Instead, we'll let the login page handle redirection to setup if it detects no PIN
     return NextResponse.redirect(new URL("/login", req.nextUrl));
   }
 

@@ -4,6 +4,7 @@ import "./globals.css";
 import Navbar from "@/components/Navbar";
 import Sidebar from "@/components/Sidebar";
 import Footer from "@/components/Footer";
+import SessionWatcher from "@/components/SessionWatcher";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -42,6 +43,7 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased selection:bg-orange-500/30 bg-[#fbfbfb]`}
       >
         <ToastProvider>
+          <SessionWatcher />
           <Sidebar />
           <main className="min-h-screen pb-12 lg:pl-64 overflow-x-hidden">
             {children}
