@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from "next/server";
 import dbConnect from "@/lib/db";
 import Session from "@/models/Session";
 import { encrypt, decrypt } from "./session-core";
+export { encrypt, decrypt };
 
 export async function getSession() {
   const session = (await cookies()).get("session")?.value;
@@ -44,3 +45,4 @@ export async function updateSession(request: NextRequest) {
   });
   return res;
 }
+
