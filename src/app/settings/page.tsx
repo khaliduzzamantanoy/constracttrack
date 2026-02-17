@@ -42,7 +42,7 @@ export default function SettingsPage() {
   }, []);
 
   const fetchSessions = async () => {
-    setLoadingSessions(true);
+    // Return early if we don't need to fetch (optional optimization)
     try {
       const res = await fetch('/api/admin/sessions');
       const data = await res.json();
@@ -78,10 +78,18 @@ export default function SettingsPage() {
   };
 
   const handleLogout = async () => {
+    setLoading(true);
     try {
-      await logoutSession(currentSessionId);
+      const res = await fetch('/api/auth', { method: 'DELETE' });
+      if (res.ok) {
+        window.location.href = '/login';
+      } else {
+        showToast('Logout failed', 'error');
+      }
     } catch (e) {
       showToast('Logout failed', 'error');
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -197,24 +205,29 @@ export default function SettingsPage() {
                 </button>
              </div>
 
-             {/* Sign Out */}
-             <div className="p-5 lg:p-6 flex items-center justify-between group hover:bg-red-50/10 transition-all">
-                <div className="flex items-center gap-4">
-                   <div className="w-10 h-10 rounded-xl bg-gray-50 text-gray-400 flex items-center justify-center group-hover:text-gray-900">
-                      <LogOut size={18} />
-                   </div>
-                   <div>
-                      <h3 className="text-sm font-black text-gray-900">Sign Out</h3>
-                      <p className="text-[10px] font-medium text-gray-400">Clear session on this device</p>
-                   </div>
-                </div>
-                <button 
-                   onClick={handleLogout}
-                   className="px-4 py-2 rounded-xl bg-gray-900 text-white text-[9px] font-black uppercase tracking-widest hover:bg-black transition-all"
-                >
-                   Logout
-                </button>
-             </div>
+              {/* Sign Out */}
+              <button 
+                 onClick={handleLogout}
+                 disabled={loading}
+                 className="w-full p-5 lg:p-6 flex items-center justify-between group hover:bg-red-50/10 transition-all text-left outline-none"
+              >
+                 <div className="flex items-center gap-4">
+                    <div className="w-10 h-10 rounded-xl bg-gray-50 text-gray-400 flex items-center justify-center group-hover:text-gray-900 transition-colors">
+                       <LogOut size={18} />
+                    </div>
+                    <div>
+                       <h3 className="text-sm font-black text-gray-900 group-hover:text-red-600 transition-colors">Sign Out</h3>
+                       <p className="text-[10px] font-medium text-gray-400">Clear session on this device</p>
+                    </div>
+                 </div>
+                 <div className="px-5 h-10 rounded-xl bg-gray-900 text-white text-[10px] font-black uppercase tracking-widest hover:bg-black active:scale-95 transition-all flex items-center justify-center min-w-[100px]">
+                    {loading ? (
+                       <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                    ) : (
+                       'Logout'
+                    )}
+                 </div>
+              </button>
           </div>
         </section>
 

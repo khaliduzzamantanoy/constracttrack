@@ -3,7 +3,7 @@ import dbConnect from "@/lib/db";
 import SystemConfig from "@/models/SystemConfig";
 import Session from "@/models/Session";
 import bcrypt from "bcryptjs";
-import { encrypt } from "@/lib/auth";
+import { decrypt, encrypt } from "@/lib/auth";
 
 export async function POST(req: NextRequest) {
   await dbConnect();
@@ -55,7 +55,20 @@ export async function POST(req: NextRequest) {
   return response;
 }
 
-export async function DELETE() {
+export async function DELETE(req: NextRequest) {
+  const sessionToken = req.cookies.get("session")?.value;
+  if (sessionToken) {
+    try {
+      const { sessionId } = await decrypt(sessionToken);
+      if (sessionId) {
+        await dbConnect();
+        await Session.deleteOne({ sessionId });
+      }
+    } catch (e) {
+      console.error("Logout session revocation failed", e);
+    }
+  }
+
   const response = NextResponse.json({ success: true });
   response.cookies.set({
     name: "session",
