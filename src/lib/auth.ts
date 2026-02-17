@@ -1,6 +1,8 @@
 import { SignJWT, jwtVerify } from "jose";
 import { cookies } from "next/headers";
 import { NextRequest, NextResponse } from "next/server";
+import dbConnect from "@/lib/db";
+import Session from "@/models/Session";
 
 const secretKey = process.env.JWT_SECRET;
 const key = new TextEncoder().encode(secretKey);
@@ -23,7 +25,25 @@ export async function decrypt(input: string): Promise<any> {
 export async function getSession() {
   const session = (await cookies()).get("session")?.value;
   if (!session) return null;
-  return await decrypt(session);
+  
+  try {
+    const parsed = await decrypt(session);
+    
+    // Check if session exists in DB
+    await dbConnect();
+    const sessionDoc = await Session.findOne({ 
+      sessionId: parsed.sessionId,
+      expiresAt: { $gt: new Date() }
+    });
+    
+    if (!sessionDoc) {
+      return null;
+    }
+    
+    return parsed;
+  } catch (e) {
+    return null;
+  }
 }
 
 export async function updateSession(request: NextRequest) {

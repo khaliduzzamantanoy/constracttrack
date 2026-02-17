@@ -18,6 +18,7 @@ import {
 } from 'lucide-react';
 import { useToast } from '@/context/ToastContext';
 import { useRouter } from 'next/navigation';
+import { cn } from '@/lib/utils';
 
 export default function SettingsPage() {
   const [loading, setLoading] = useState(false);
@@ -27,17 +28,58 @@ export default function SettingsPage() {
   const { showToast } = useToast();
   const router = useRouter();
 
+  const [sessions, setSessions] = useState<any[]>([]);
+  const [currentSessionId, setCurrentSessionId] = useState('');
+  const [loadingSessions, setLoadingSessions] = useState(true);
+
   useEffect(() => {
     // Fetch initial config
     fetch('/api/admin/config')
       .then(res => res.json())
       .then(data => setProjectName(data.projectName));
+
+    fetchSessions();
   }, []);
+
+  const fetchSessions = async () => {
+    setLoadingSessions(true);
+    try {
+      const res = await fetch('/api/admin/sessions');
+      const data = await res.json();
+      if (res.ok) {
+        setSessions(data.sessions);
+        setCurrentSessionId(data.currentSessionId);
+      }
+    } catch (e) {
+      console.error('Failed to fetch sessions');
+    } finally {
+      setLoadingSessions(false);
+    }
+  };
+
+  const logoutSession = async (sessionId: string) => {
+    try {
+      const res = await fetch('/api/admin/sessions', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ sessionId }),
+      });
+      if (res.ok) {
+        if (sessionId === currentSessionId) {
+          router.replace('/login');
+        } else {
+          showToast('Device logged out', 'success');
+          fetchSessions();
+        }
+      }
+    } catch (e) {
+      showToast('Action failed', 'error');
+    }
+  };
 
   const handleLogout = async () => {
     try {
-      await fetch('/api/auth', { method: 'DELETE' });
-      router.replace('/login');
+      await logoutSession(currentSessionId);
     } catch (e) {
       showToast('Logout failed', 'error');
     }
@@ -131,12 +173,12 @@ export default function SettingsPage() {
         {/* Security Section */}
         <section className="space-y-4">
           <h2 className="text-[11px] font-black text-gray-400 uppercase tracking-[0.2em] px-1 flex items-center gap-2">
-             <ShieldCheck size={14} className="text-orange-500" /> Authentication & Privacy
+             <ShieldCheck size={14} className="text-orange-500" /> Authentication & Security
           </h2>
           
           <div className="glass-effect rounded-[1.5rem] lg:rounded-[2rem] bg-white/40 border-black/5 overflow-hidden">
              
-             {/* Change PIN (Placeholder for now as logic is same as setup) */}
+             {/* Change PIN */}
              <div className="p-5 lg:p-6 flex items-center justify-between group hover:bg-white/40 transition-all border-b border-black/[0.02]">
                 <div className="flex items-center gap-4">
                    <div className="w-10 h-10 rounded-xl bg-orange-50 text-orange-600 flex items-center justify-center">
@@ -163,7 +205,7 @@ export default function SettingsPage() {
                    </div>
                    <div>
                       <h3 className="text-sm font-black text-gray-900">Sign Out</h3>
-                      <p className="text-[10px] font-medium text-gray-400">Clear current local session</p>
+                      <p className="text-[10px] font-medium text-gray-400">Clear session on this device</p>
                    </div>
                 </div>
                 <button 
@@ -174,6 +216,54 @@ export default function SettingsPage() {
                 </button>
              </div>
           </div>
+        </section>
+
+        {/* Device Sessions Section */}
+        <section className="space-y-4">
+           <h2 className="text-[11px] font-black text-gray-400 uppercase tracking-[0.2em] px-1 flex items-center gap-2">
+              <Smartphone size={14} className="text-orange-500" /> Active Logged-in Devices
+           </h2>
+           
+           <div className="glass-effect p-2 lg:p-3 rounded-[1.5rem] lg:rounded-[2.2rem] bg-white/30 border-black/5 divide-y divide-black/[0.03]">
+              {loadingSessions ? (
+                 <div className="p-8 text-center">
+                    <div className="w-6 h-6 border-2 border-orange-600/20 border-t-orange-600 rounded-full animate-spin mx-auto" />
+                 </div>
+              ) : sessions.length === 0 ? (
+                 <div className="p-8 text-center text-[10px] font-bold text-gray-400 uppercase tracking-widest">No active sessions found</div>
+              ) : (
+                 sessions.map((sess) => (
+                    <div key={sess.sessionId} className="p-4 flex items-center justify-between">
+                       <div className="flex items-center gap-4">
+                          <div className={cn(
+                             "w-10 h-10 rounded-xl flex items-center justify-center shadow-sm",
+                             sess.sessionId === currentSessionId ? "bg-orange-600 text-white" : "bg-white text-gray-400"
+                          )}>
+                             <Smartphone size={18} />
+                          </div>
+                          <div>
+                             <div className="flex items-center gap-2">
+                                <h3 className="text-[11px] font-black text-gray-900 truncate max-w-[150px] md:max-w-xs">{sess.userAgent.split(' ')[0]} {sess.userAgent.includes('Mobile') ? '(Mobile)' : '(Desktop)'}</h3>
+                                {sess.sessionId === currentSessionId && (
+                                   <span className="bg-emerald-100 text-emerald-600 px-1.5 py-0.5 rounded text-[7px] font-black uppercase tracking-tighter">Current Device</span>
+                                )}
+                             </div>
+                             <p className="text-[8px] font-bold text-gray-400 uppercase tracking-widest mt-1">IP: {sess.ip} • Active: {new Date(sess.lastActive).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</p>
+                          </div>
+                       </div>
+                       
+                       {sess.sessionId !== currentSessionId && (
+                          <button 
+                             onClick={() => logoutSession(sess.sessionId)}
+                             className="p-2.5 rounded-xl bg-red-50 text-red-600 hover:bg-red-600 hover:text-white transition-all active:scale-95"
+                          >
+                             <LogOut size={16} />
+                          </button>
+                       )}
+                    </div>
+                 ))
+              )}
+           </div>
         </section>
 
         {/* Danger Zone */}

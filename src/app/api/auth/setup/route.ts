@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import dbConnect from "@/lib/db";
 import SystemConfig from "@/models/SystemConfig";
+import Session from "@/models/Session";
 import bcrypt from "bcryptjs";
 import { encrypt, getSession } from "@/lib/auth";
 
@@ -32,14 +33,27 @@ export async function POST(req: NextRequest) {
     value: hashedPassword
   });
 
-  // Log in immediately after setup (create session)
+  // Create session tracking in DB
+  const sessionId = Math.random().toString(36).substring(2) + Date.now().toString(36);
+  const userAgent = req.headers.get("user-agent") || "Unknown";
+  const ip = req.headers.get("x-forwarded-for") || "Local";
+  
   const expires = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
-  const session = await encrypt({ userId: "admin", expires });
+  
+  await Session.create({
+    sessionId,
+    userId: "admin",
+    userAgent,
+    ip,
+    expiresAt: expires
+  });
+
+  const sessionToken = await encrypt({ userId: "admin", sessionId, expires });
 
   const response = NextResponse.json({ success: true });
   response.cookies.set({
     name: "session",
-    value: session,
+    value: sessionToken,
     httpOnly: true,
     expires: expires,
     path: "/",
@@ -73,6 +87,9 @@ export async function PATCH(req: NextRequest) {
     { value: hashedPassword },
     { upsert: true }
   );
+
+  // CRITICAL: Invalidate ALL sessions in the DB to force global logout
+  await Session.deleteMany({ userId: "admin" });
 
   return NextResponse.json({ success: true, message: "PIN updated successfully" });
 }
