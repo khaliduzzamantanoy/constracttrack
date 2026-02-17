@@ -32,5 +32,17 @@ export async function DELETE(req: NextRequest) {
   await dbConnect();
   await Session.deleteOne({ sessionId, userId: "admin" });
 
-  return NextResponse.json({ success: true });
+  const response = NextResponse.json({ success: true });
+  
+  // If the user is logging out of the CURRENT session, clear the cookie
+  if (sessionId === session.sessionId) {
+    response.cookies.set({
+      name: "session",
+      value: "",
+      expires: new Date(0),
+      path: "/",
+    });
+  }
+
+  return response;
 }

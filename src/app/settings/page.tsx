@@ -66,7 +66,7 @@ export default function SettingsPage() {
       });
       if (res.ok) {
         if (sessionId === currentSessionId) {
-          router.replace('/login');
+          window.location.href = '/login';
         } else {
           showToast('Device logged out', 'success');
           fetchSessions();
