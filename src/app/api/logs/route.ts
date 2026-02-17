@@ -1,8 +1,12 @@
 import { NextResponse } from 'next/server';
 import dbConnect from '@/lib/db';
 import Log from '@/models/Log';
+import { getSession } from '@/lib/auth';
 
 export async function GET() {
+  const session = await getSession();
+  if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  
   await dbConnect();
   try {
     const logs = await Log.find({}).sort({ timestamp: -1 });
@@ -15,6 +19,9 @@ export async function GET() {
 import Stock from '@/models/Stock';
 
 export async function POST(request: Request) {
+  const session = await getSession();
+  if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+
   await dbConnect();
   try {
     const body = await request.json();
@@ -37,6 +44,9 @@ export async function POST(request: Request) {
 }
 
 export async function PATCH(request: Request) {
+  const session = await getSession();
+  if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+
   const { id, ...data } = await request.json();
   await dbConnect();
   try {

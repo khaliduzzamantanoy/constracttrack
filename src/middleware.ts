@@ -21,7 +21,8 @@ export async function middleware(req: NextRequest) {
       // We use a fetch to our internal verify API because middleware is Edge Runtime
       if (!isPublicRoute) {
         const verifyRes = await fetch(`${req.nextUrl.origin}/api/auth/verify`, {
-          headers: { Cookie: `session=${session}` }
+          headers: { Cookie: `session=${session}` },
+          cache: 'no-store'
         });
         
         if (!verifyRes.ok) {
