@@ -1,7 +1,7 @@
 "use client";
 
 import React from 'react';
-import { Home, ClipboardList, PenTool, BarChart3 } from 'lucide-react';
+import { Home, ClipboardList, PenTool, BarChart3, Settings } from 'lucide-react';
 import { usePathname } from 'next/navigation';
 import Link from 'next/link';
 import { cn } from '@/lib/utils';
@@ -12,6 +12,7 @@ const navItems = [
   { icon: PenTool, label: 'Log', href: '/log' },
   { icon: ClipboardList, label: 'Materials', href: '/materials' },
   { icon: BarChart3, label: 'Report', href: '/report' },
+  { icon: Settings, label: 'Settings', href: '/settings' },
 ];
 
 const Navbar = () => {
