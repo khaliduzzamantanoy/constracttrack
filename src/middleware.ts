@@ -16,8 +16,20 @@ export async function middleware(req: NextRequest) {
   if (session) {
     try {
       decoded = await decrypt(session);
+      
+      // 2.1 CRITICAL: Verify against DB if it's NOT a public route
+      // We use a fetch to our internal verify API because middleware is Edge Runtime
+      if (!isPublicRoute) {
+        const verifyRes = await fetch(`${req.nextUrl.origin}/api/auth/verify`, {
+          headers: { Cookie: `session=${session}` }
+        });
+        
+        if (!verifyRes.ok) {
+          decoded = null; // Mark as invalid if DB check fails
+        }
+      }
     } catch (e) {
-      console.error("Failed to decrypt session", e);
+      console.error("Failed to decrypt or verify session", e);
     }
   }
 

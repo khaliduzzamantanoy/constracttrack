@@ -164,12 +164,12 @@ export default function SettingsPage() {
                       value={projectName}
                       onChange={(e) => setProjectName(e.target.value)}
                       placeholder="Enter project name..."
-                      className="flex-1 h-12 px-5 rounded-2xl bg-white border border-black/5 outline-none focus:border-orange-500 transition-all text-xs font-bold text-gray-900"
+                      className="flex-1 h-16 px-6 rounded-2xl bg-white border border-black/5 outline-none focus:border-orange-500 transition-all text-base font-bold text-gray-900 shadow-inner shadow-black/[0.02]"
                    />
                    <button 
                       onClick={handleUpdateBranding}
                       disabled={savingConfig}
-                      className="h-12 px-8 rounded-2xl bg-orange-600 text-white text-[10px] font-black uppercase tracking-widest shadow-lg shadow-orange-600/10 hover:bg-orange-700 active:scale-95 transition-all disabled:opacity-50"
+                      className="h-16 px-10 rounded-2xl bg-orange-600 text-white text-[12px] font-black uppercase tracking-widest shadow-lg shadow-orange-600/10 hover:bg-orange-700 active:scale-95 transition-all disabled:opacity-50"
                    >
                       {savingConfig ? 'Saving...' : 'Update Title'}
                    </button>
