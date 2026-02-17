@@ -13,6 +13,7 @@ import {
   ChevronRight,
   ShieldCheck,
   Smartphone,
+  Monitor,
   Info,
   LayoutGrid
 } from 'lucide-react';
@@ -245,36 +246,41 @@ export default function SettingsPage() {
               ) : sessions.length === 0 ? (
                  <div className="p-8 text-center text-[10px] font-bold text-gray-400 uppercase tracking-widest">No active sessions found</div>
               ) : (
-                 sessions.map((sess) => (
-                    <div key={sess.sessionId} className="p-4 flex items-center justify-between">
-                       <div className="flex items-center gap-4">
-                          <div className={cn(
-                             "w-10 h-10 rounded-xl flex items-center justify-center shadow-sm",
-                             sess.sessionId === currentSessionId ? "bg-orange-600 text-white" : "bg-white text-gray-400"
-                          )}>
-                             <Smartphone size={18} />
-                          </div>
-                          <div>
-                             <div className="flex items-center gap-2">
-                                <h3 className="text-[11px] font-black text-gray-900 truncate max-w-[150px] md:max-w-xs">{sess.userAgent.split(' ')[0]} {sess.userAgent.includes('Mobile') ? '(Mobile)' : '(Desktop)'}</h3>
-                                {sess.sessionId === currentSessionId && (
-                                   <span className="bg-emerald-100 text-emerald-600 px-1.5 py-0.5 rounded text-[7px] font-black uppercase tracking-tighter">Current Device</span>
-                                )}
+                 sessions.map((sess) => {
+                    const isMobile = sess.userAgent.includes('Mobile') || sess.userAgent.includes('Android') || sess.userAgent.includes('iPhone');
+                    const DeviceIcon = isMobile ? Smartphone : Monitor;
+                    
+                    return (
+                       <div key={sess.sessionId} className="p-4 flex items-center justify-between">
+                          <div className="flex items-center gap-4">
+                             <div className={cn(
+                                "w-10 h-10 rounded-xl flex items-center justify-center shadow-sm transition-colors",
+                                sess.sessionId === currentSessionId ? "bg-orange-600 text-white" : "bg-white text-gray-400 group-hover:text-gray-900"
+                             )}>
+                                <DeviceIcon size={18} />
                              </div>
-                             <p className="text-[8px] font-bold text-gray-400 uppercase tracking-widest mt-1">IP: {sess.ip} • Active: {new Date(sess.lastActive).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</p>
+                             <div>
+                                <div className="flex items-center gap-2">
+                                   <h3 className="text-[11px] font-black text-gray-900 truncate max-w-[150px] md:max-w-xs">{sess.userAgent.split(' ')[0]} {isMobile ? '(Mobile)' : '(Desktop)'}</h3>
+                                   {sess.sessionId === currentSessionId && (
+                                      <span className="bg-emerald-100 text-emerald-600 px-1.5 py-0.5 rounded text-[7px] font-black uppercase tracking-tighter">Current Device</span>
+                                   )}
+                                </div>
+                                <p className="text-[8px] font-bold text-gray-400 uppercase tracking-widest mt-1">IP: {sess.ip} • Active: {new Date(sess.lastActive).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</p>
+                             </div>
                           </div>
+                          
+                          {sess.sessionId !== currentSessionId && (
+                             <button 
+                                onClick={() => logoutSession(sess.sessionId)}
+                                className="p-2.5 rounded-xl bg-red-50 text-red-600 hover:bg-red-600 hover:text-white transition-all active:scale-95"
+                             >
+                                <LogOut size={16} />
+                             </button>
+                          )}
                        </div>
-                       
-                       {sess.sessionId !== currentSessionId && (
-                          <button 
-                             onClick={() => logoutSession(sess.sessionId)}
-                             className="p-2.5 rounded-xl bg-red-50 text-red-600 hover:bg-red-600 hover:text-white transition-all active:scale-95"
-                          >
-                             <LogOut size={16} />
-                          </button>
-                       )}
-                    </div>
-                 ))
+                    );
+                 })
               )}
            </div>
         </section>
