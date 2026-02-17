@@ -48,6 +48,7 @@ An advanced, data-driven construction material and labor tracking system designe
 
    ```env
    MONGODB_URI=your_mongodb_connection_string
+   JWT_SECRET=your-secret-code
    ```
 4. **Run Development Server**
 
