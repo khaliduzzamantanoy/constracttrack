@@ -51,10 +51,58 @@ export async function PATCH(request: Request) {
   await dbConnect();
   try {
     if (!id) throw new Error('Log ID is required');
+    
+    // Get old log for stock adjustment
+    const oldLog = await Log.findById(id);
+    if (!oldLog) throw new Error('Log not found');
+
     const updatedLog = await Log.findByIdAndUpdate(id, data, { new: true });
+
+    // Adjust Stock based on difference
+    const updates: any[] = [];
+    const adjustStock = (key: string) => {
+      const diff = (data[key] || 0) - (oldLog[key] || 0);
+      if (diff !== 0) {
+        updates.push(Stock.findOneAndUpdate({ materialId: key }, { $inc: { quantity: -diff } }));
+      }
+    };
+
+    ['cement', 'sand_fine', 'sand_selection', 'brick_chips'].forEach(adjustStock);
+    if (updates.length > 0) await Promise.all(updates);
+
     return NextResponse.json(updatedLog);
   } catch (error: any) {
     return NextResponse.json({ error: error.message || 'Failed to update log' }, { status: 400 });
+  }
+}
+
+export async function DELETE(request: Request) {
+  const session = await getSession();
+  if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+
+  const { searchParams } = new URL(request.url);
+  const id = searchParams.get('id');
+
+  await dbConnect();
+  try {
+    if (!id) throw new Error('Log ID is required');
+    
+    const log = await Log.findById(id);
+    if (!log) throw new Error('Log not found');
+
+    // Replenish Stock
+    const updates: any[] = [];
+    if (log.cement > 0) updates.push(Stock.findOneAndUpdate({ materialId: 'cement' }, { $inc: { quantity: log.cement } }));
+    if (log.sand_fine > 0) updates.push(Stock.findOneAndUpdate({ materialId: 'sand_fine' }, { $inc: { quantity: log.sand_fine } }));
+    if (log.sand_selection > 0) updates.push(Stock.findOneAndUpdate({ materialId: 'sand_selection' }, { $inc: { quantity: log.sand_selection } }));
+    if (log.brick_chips > 0) updates.push(Stock.findOneAndUpdate({ materialId: 'brick_chips' }, { $inc: { quantity: log.brick_chips } }));
+    
+    await Promise.all(updates);
+    await Log.findByIdAndDelete(id);
+
+    return NextResponse.json({ success: true });
+  } catch (error: any) {
+    return NextResponse.json({ error: error.message || 'Failed to delete log' }, { status: 400 });
   }
 }
 
