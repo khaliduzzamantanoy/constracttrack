@@ -317,12 +317,35 @@ export default function SettingsPage() {
 
         {/* Info Area */}
         <section className="pt-6 lg:pt-10 flex flex-col items-center gap-4 text-center">
-           <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white border border-black/5 text-[9px] font-black text-gray-400 uppercase tracking-widest leading-none">
-              <Smartphone size={12} className="text-orange-500" /> Device Secured: INFRA-A1-NODE
-           </div>
-           <p className="text-[10px] font-medium text-gray-400/60 max-w-xs">
-              Encryption provided by RSA-SHA256 headers. Metadata logs are strictly stored in designated project clusters.
-           </p>
+           {loadingSessions ? (
+              <div className="h-6 w-32 bg-gray-100 rounded-full animate-pulse" />
+           ) : (
+             <>
+               <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white border border-black/5 text-[9px] font-black text-gray-400 uppercase tracking-widest leading-none shadow-sm">
+                  {(() => {
+                    const currentSession = sessions.find(s => s.sessionId === currentSessionId);
+                    const isMobile = currentSession?.userAgent.includes('Mobile') || currentSession?.userAgent.includes('Android') || currentSession?.userAgent.includes('iPhone');
+                    const DeviceIcon = isMobile ? Smartphone : Monitor;
+                    const nodeId = currentSession 
+                      ? `${currentSession.ip.split('.').pop()}-NODE-${currentSession.sessionId.slice(0, 4).toUpperCase()}` 
+                      : 'INFRA-A1-NODE';
+                    return (
+                      <>
+                        <DeviceIcon size={12} className="text-orange-500" /> 
+                        Device Secured: {nodeId}
+                      </>
+                    );
+                  })()}
+               </div>
+               <p className="text-[10px] font-medium text-gray-400/60 max-w-xs leading-relaxed">
+                  {currentSessionId ? (
+                    `Encryption verified for session ${currentSessionId.slice(0, 8).toUpperCase()}. Metadata logs are isolated and strictly stored in project clusters.`
+                  ) : (
+                    "Encryption provided by RSA-SHA256 headers. Metadata logs are strictly stored in designated project clusters."
+                  )}
+               </p>
+             </>
+           )}
         </section>
       </div>
 
