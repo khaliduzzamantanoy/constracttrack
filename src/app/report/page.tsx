@@ -286,6 +286,7 @@ export default function ReportPage() {
                           <th className="px-8 py-4 text-[9px] font-black text-gray-400 uppercase tracking-widest">Material Payload</th>
                           <th className="px-8 py-4 text-[9px] font-black text-gray-400 uppercase tracking-widest">Handled By</th>
                           <th className="px-8 py-4 text-[9px] font-black text-gray-400 uppercase tracking-widest text-right">Floor</th>
+                          <th className="px-8 py-4 text-[9px] font-black text-gray-400 uppercase tracking-widest text-right">Actions</th>
                        </tr>
                     </thead>
                     <tbody className="divide-y divide-black/[0.01]">
@@ -332,6 +333,22 @@ export default function ReportPage() {
                                 <div className="inline-flex items-center gap-1.5 bg-orange-50 text-orange-600 px-2.5 py-1 rounded-full text-[9px] font-black uppercase tracking-tight border border-orange-100/50">
                                    <Layers size={10} strokeWidth={3} />
                                    {log.tier}
+                                </div>
+                             </td>
+                             <td className="px-8 py-5 text-right">
+                                <div className="flex justify-end items-center gap-2">
+                                   <button 
+                                     onClick={() => setEditingLog(log)}
+                                     className="p-2 rounded-lg bg-orange-50 text-orange-600 hover:bg-orange-600 hover:text-white transition-all shadow-sm active:scale-90"
+                                   >
+                                      <Edit2 size={13} strokeWidth={2.5} />
+                                   </button>
+                                   <button 
+                                     onClick={() => setShowDeleteConfirm(log._id)}
+                                     className="p-2 rounded-lg bg-red-50 text-red-600 hover:bg-red-600 hover:text-white transition-all shadow-sm active:scale-90"
+                                   >
+                                      <Trash2 size={13} strokeWidth={2.5} />
+                                   </button>
                                 </div>
                              </td>
                           </tr>
@@ -383,7 +400,20 @@ export default function ReportPage() {
                              </div>
                              <span className="text-[9px] font-black text-gray-400 uppercase tracking-widest">{log.loggedBy || 'Unknown'}</span>
                           </div>
-                          <div className="text-[8px] font-bold text-gray-300 uppercase tracking-widest">Entry Verified</div>
+                          <div className="flex gap-2">
+                             <button 
+                               onClick={() => setEditingLog(log)}
+                               className="w-8 h-8 rounded-lg bg-orange-50 text-orange-600 flex items-center justify-center shadow-sm active:scale-95 transition-all"
+                             >
+                                <Edit2 size={12} strokeWidth={2.5} />
+                             </button>
+                             <button 
+                               onClick={() => setShowDeleteConfirm(log._id)}
+                               className="w-8 h-8 rounded-lg bg-red-50 text-red-600 flex items-center justify-center shadow-sm active:scale-95 transition-all"
+                             >
+                                <Trash2 size={12} strokeWidth={2.5} />
+                             </button>
+                          </div>
                        </div>
                     </div>
                  ))}
